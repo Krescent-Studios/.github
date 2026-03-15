@@ -23,6 +23,13 @@ on:
       SENTRY_AUTH_TOKEN:
         description: "The sentry organization token to upload sourcemaps with."
         required: false
+    outputs:
+      version:
+        description: "Resolved version"
+        value: ${{ jobs.build.outputs.version }}
+      commit_sha:
+        description: "Commit SHA"
+        value: ${{ jobs.build.outputs.commit_sha }}
 
 env:
   REGISTRY: ghcr.io
@@ -36,7 +43,7 @@ jobs:
       packages: write
     outputs:
       version: ${{ steps.meta.outputs.version }}
-      commit_sha: ${{ steps.meta.outputs.sha }}
+      commit_sha: ${{ github.sha }}
 
     steps:
       - name: Checkout repository
@@ -91,9 +98,27 @@ jobs:
             type=gha,mode=max,scope=runner
             type=inline
 
-  request-update:
-    if: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && needs.build.result && inputs.PORTAINER }}
+      - name: Export build output
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: build-output
+          outputs: type=local,dest=./build-output
+          build-args: |
+            VERSION=${{ github.ref_type == 'tag' && steps.meta.outputs.version || github.sha }}
+            COMMIT_SHA=${{ github.sha }}
+          cache-from: |
+            type=gha,scope=runner
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-dist
+          path: ./build-output/dist
+
+  request-update:
+    if: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && needs.build.result == 'success' && inputs.PORTAINER }}
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -107,4 +132,4 @@ jobs:
       - name: Call Webhook
         uses: newarifrh/portainer-service-webhook@v1
         with:
-          webhook_url: ${{ secrets.PORTAINER_WEBHOOK }}?${{ inputs.DEPLOY_TAG }}=${{ needs.build.outputs.version }}"
+          webhook_url: ${{ secrets.PORTAINER_WEBHOOK }}?${{ inputs.DEPLOY_TAG }}=${{ needs.build.outputs.version }}
