@@ -1,6 +1,5 @@
 name: Deployment
 
-
 on:
   workflow_call:
     inputs:
@@ -102,7 +101,7 @@ jobs:
       - name: Check for build-output stage
         id: check_build_output_stage
         run: |
-          if [ -f Dockerfile ] && grep -qE '^FROM .+ as build-output' Dockerfile; then
+          if [ -f Dockerfile ] && grep -qiE '^FROM .+ as build-output' Dockerfile; then
             echo "has_build_output=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_build_output=false" >> "$GITHUB_OUTPUT"
@@ -123,12 +122,14 @@ jobs:
             type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Upload dist artifact
-        if: steps.check_build_output_stage.outputs.has_build_output == 'true' && hashFiles('build-output/dist/**')
+        # ensure we only upload when the build-output exists and contains files
+        if: ${{ steps.check_build_output_stage.outputs.has_build_output == 'true' && hashFiles('build-output/dist/**') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: api-dist
-          path: ./build-output/dist
-
+          # upload the contents so artifact root is the files, not a nested 'dist' folder
+          path: ./build-output/dist/*
+  
   request-update:
     if: ${{ (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && needs.build.result == 'success' && inputs.PORTAINER }}
     needs: build
