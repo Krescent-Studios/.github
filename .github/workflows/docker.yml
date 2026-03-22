@@ -41,6 +41,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
     outputs:
       version: ${{ steps.meta.outputs.version }}
       commit_sha: ${{ github.sha }}
