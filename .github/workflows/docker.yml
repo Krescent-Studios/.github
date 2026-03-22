@@ -134,7 +134,7 @@ jobs:
       - name: Upload dist artifact
         # ensure we only upload when the build-output exists and contains files
         if: ${{ steps.check_build_output_stage.outputs.has_build_output == 'true' && hashFiles('build-output/dist/**') != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: api-dist
           # upload the contents so artifact root is the files, not a nested 'dist' folder
