@@ -91,6 +91,7 @@ jobs:
             SENTRY_ORG=${{ vars.SENTRY_ORG }}
             SENTRY_PROJECT=${{ vars.SENTRY_PROJECT }}
             SENTRY_URL=${{ vars.SENTRY_URL }}
+            SENTRY_DSN=${{ vars.SENTRY_DSN }}
           secrets: |
             SHA=${{ github.sha }}
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
