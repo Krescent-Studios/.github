@@ -41,8 +41,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-      #id-token: write
-      #attestations: write
+      id-token: write
+      attestations: write
     outputs:
       version: ${{ steps.meta.outputs.version }}
       commit_sha: ${{ github.sha }}
@@ -103,12 +103,12 @@ jobs:
             type=inline
 
        # Does not work because of the fact that our github org is free.
-#      - name: Generate artifact attestation
-#        uses: actions/attest@v4
-#        with:
-#          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-#          subject-digest: ${{ steps.build-and-push.outputs.digest }}
-#          push-to-registry: true
+      - name: Generate artifact attestation
+        uses: actions/attest@v4
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build-and-push.outputs.digest }}
+          push-to-registry: true
 
       - name: Check for build-output stage
         id: check_build_output_stage
