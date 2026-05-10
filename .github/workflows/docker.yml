@@ -97,6 +97,7 @@ jobs:
           secrets: |
             SHA=${{ github.sha }}
             SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+            PATHOS_OPENAPI_SECRET=${{ secrets.PATHOS_OPENAPI_SECRET }}
           cache-from: type=gha,scope=${{ github.repository }}-docker
           cache-to: type=gha,mode=max,scope=${{ github.repository }}-docker
 
